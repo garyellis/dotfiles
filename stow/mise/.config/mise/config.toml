@@ -1,0 +1,10 @@
+# Managed development tools
+[tools]
+bun = "1.4"
+dotnet = "10"
+go = "1.26"
+node = "24"
+python = "3.14"
+rust = { version = "1.98", profile = "default", components = ["rust-analyzer", "rust-src"], postinstall = "rustup component add rust-analyzer rust-src" }
+uv = "0.11"
+"npm:@earendil-works/pi-coding-agent" = "latest"

@@ -1,10 +1,10 @@
-local wezterm = require 'wezterm'
+local wezterm = require("wezterm")
 local config = {}
 
 config.front_end = "OpenGL"
 config.enable_kitty_graphics = true
 
-config.color_scheme = 'tokyonight'
+config.color_scheme = "tokyonight"
 -- config.color_scheme = 'Batman'
 
 -- config.colors = {
@@ -12,7 +12,7 @@ config.color_scheme = 'tokyonight'
 --}
 
 config.keys = {
-  {key="Enter", mods="SHIFT", action=wezterm.action{SendString="\x1b\r"}},
+	{ key = "Enter", mods = "SHIFT", action = wezterm.action({ SendString = "\x1b\r" }) },
 }
 
 return config

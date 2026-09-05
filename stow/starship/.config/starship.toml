@@ -1,0 +1,49 @@
+# Prompt layout
+add_newline = true
+command_timeout = 200
+
+format = """
+[╭─](#78824b)$directory$git_branch$git_status$python
+[╰─](#78824b)$character"""
+
+[character]
+success_symbol = "[❯](#78824b) "
+error_symbol = "[❯](#685742) "
+vimcmd_symbol = "[❮](#78824b) "
+
+[directory]
+format = " [$path]($style)"
+style = "bold #c2c2b0"
+home_symbol = "~"
+truncation_length = 3
+truncation_symbol = "…/"
+read_only = ""
+
+[git_branch]
+format = " [$symbol$branch]($style)"
+symbol = " "
+style = "bold #a8b078"
+truncation_length = 24
+truncation_symbol = "…"
+
+[git_status]
+format = " [$all_status$ahead_behind]($style)"
+style = "#cf9f7b"
+conflicted = "="
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+untracked = "?"
+stashed = "$"
+modified = "!"
+staged = "+"
+renamed = "»"
+deleted = "×"
+
+[python]
+format = " [$symbol$virtualenv]($style)"
+symbol = " "
+style = "#8f9a72"
+detect_extensions = []
+detect_files = []
+detect_folders = []

@@ -1,0 +1,6 @@
+# Keep transient editor output outside the tracked Neovim configuration.
+*.bak
+*.log
+*.swp
+*.swo
+*~

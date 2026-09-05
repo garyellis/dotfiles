@@ -1,0 +1,137 @@
+[tools]
+actionlint = "1.7.7"
+bats = "1.12.0"
+"github:herdrdev/herdr" = "0.8.2"
+neovim = "0.12.1"
+shellcheck = "0.11.0"
+shfmt = "3.12.0"
+starship = "1.26.0"
+stylua = "2.1.0"
+taplo = "0.10.0"
+uv = "0.11.18"
+
+[tasks.check]
+description = "Run all repository validation"
+depends = [
+  "lint:brewfile",
+  "lint:github-actions",
+  "lint:json",
+  "lint:lua",
+  "lint:shell",
+  "lint:toml",
+  "test:shell",
+  "validate:herdr",
+  "validate:mise-config",
+  "validate:neovim",
+  "validate:setup",
+  "validate:starship",
+  "validate:uv",
+]
+
+[tasks."lint:brewfile"]
+description = "Validate the Brewfile with Ruby and Homebrew Bundle"
+run = '''
+ruby -c Brewfile
+HOMEBREW_NO_AUTO_UPDATE=1 brew bundle list --file Brewfile >/dev/null
+'''
+
+[tasks."lint:github-actions"]
+description = "Lint GitHub Actions workflows"
+run = "actionlint"
+
+[tasks."lint:json"]
+description = "Validate JSON configuration"
+run = "jq --exit-status . stow/neovim/.config/nvim/lazy-lock.json >/dev/null"
+
+[tasks."lint:lua"]
+description = "Check Lua configuration syntax and formatting"
+run = "find stow -type f -name '*.lua' -exec stylua --check {} +"
+
+[tasks."lint:shell"]
+description = "Check shell script syntax, correctness, and formatting"
+run = '''
+git ls-files -z -- '*.sh' 'tests/fixtures/bin/*' | xargs -0 bash -n
+git ls-files -z -- '*.sh' 'tests/fixtures/bin/*' | xargs -0 shellcheck
+git ls-files -z -- '*.sh' 'tests/fixtures/bin/*' | xargs -0 shfmt --diff --indent 2 --case-indent
+zsh -n stow/zsh/.config/zsh/aliases.zsh
+'''
+
+[tasks."lint:toml"]
+description = "Validate TOML and the Mise task configuration"
+run = '''
+taplo lint
+mise tasks validate
+'''
+
+[tasks."test:shell"]
+description = "Test setup behavior in isolated home directories"
+run = "bats tests/setup.bats"
+
+[tasks."setup:check"]
+description = "Preview setup changes without modifying the machine"
+raw = true
+run = "./setup.sh --check"
+
+[tasks.setup]
+description = "Install packages and apply the dotfiles to the current home directory"
+confirm = "Install Brewfile and Mise dependencies, back up managed config, and update this home directory?"
+raw = true
+run = "./setup.sh --apply"
+
+[tasks."validate:herdr"]
+description = "Validate Herdr configuration with Herdr"
+run = "HERDR_CONFIG_PATH=$PWD/stow/herdr/.config/herdr/config.toml herdr config check"
+
+[tasks."validate:mise-config"]
+description = "Resolve the managed global tool configuration with Mise"
+run = "MISE_GLOBAL_CONFIG_FILE=$PWD/stow/mise/.config/mise/config.toml mise install --dry-run"
+
+[tasks."validate:neovim"]
+description = "Start the Neovim configuration with an isolated plugin stub"
+run = '''
+nvim_test_dir=$(mktemp -d "${TMPDIR:-/tmp}/dotfiles-nvim-check.XXXXXX")
+trap 'rm -rf -- "$nvim_test_dir"' EXIT
+mkdir -p "$nvim_test_dir/data/nvim/lazy/lazy.nvim"
+
+nvim_output=$(
+  XDG_CONFIG_HOME="$PWD/stow/neovim/.config" \
+    XDG_DATA_HOME="$nvim_test_dir/data" \
+    XDG_STATE_HOME="$nvim_test_dir/state" \
+    XDG_CACHE_HOME="$nvim_test_dir/cache" \
+    NVIM_LOG_FILE=/dev/null \
+    nvim --headless -i NONE \
+      --cmd 'lua package.preload["lazy"] = function() return { setup = function(spec) assert(type(spec) == "table" and #spec > 0, "lazy plugin spec is empty") end } end' \
+      -c quit 2>&1
+)
+
+if [ -n "$nvim_output" ]; then
+  printf '%s\n' "$nvim_output" >&2
+  exit 1
+fi
+'''
+
+[tasks."validate:setup"]
+description = "Run the setup preflight against an isolated home directory"
+run = '''
+setup_test_home=$(mktemp -d "${TMPDIR:-/tmp}/dotfiles-setup-check.XXXXXX")
+trap 'rm -rf -- "$setup_test_home"' EXIT
+
+HOME="$setup_test_home" \
+  XDG_CONFIG_HOME="$setup_test_home/.config" \
+  XDG_STATE_HOME="$setup_test_home/.local/state" \
+  ZDOTDIR="$setup_test_home" \
+  ./setup.sh --check
+'''
+
+[tasks."validate:starship"]
+description = "Load and resolve Starship configuration with Starship"
+run = "STARSHIP_CONFIG=$PWD/stow/starship/.config/starship.toml starship print-config >/dev/null"
+
+[tasks."validate:uv"]
+description = "Load uv configuration with uv without network access"
+run = "UV_NO_CACHE=1 uv --offline --config-file stow/uv/.config/uv/uv.toml python list --only-installed >/dev/null"
+
+[tasks."setup:verify"]
+description = "Verify the dotfiles installed in the current home directory"
+raw = true
+run = "./setup.sh --verify"

@@ -1,0 +1,3 @@
+# Python environment preferences
+python-preference = "only-system"
+python-downloads = "manual"

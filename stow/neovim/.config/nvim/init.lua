@@ -1,7 +1,7 @@
--- Bootstrap lazy.nvim
+-- Locate lazy.nvim in Neovim's data directory.
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
-  vim.api.nvim_err_writeln("lazy.nvim not found at " .. lazypath)
+	vim.api.nvim_err_writeln("lazy.nvim not found at " .. lazypath)
 end
 
 vim.opt.rtp:prepend(lazypath)
