@@ -3,6 +3,7 @@ onboarding = false
 
 [ui]
 agent_panel_sort = "priority"
+right_click_passthrough_modifier = "ctrl"
 
 [[keys.command]]
 key = "prefix+f"
