@@ -31,6 +31,26 @@ setup() {
   [ "$(grep -Fxc '# >>> dotfiles mise >>>' "$HOME/.zshrc")" -eq 1 ]
 }
 
+@test "apply installs Homebrew dependencies before using Stow" {
+  run bash -c '
+    source "$1/setup.sh"
+    provisioned=0
+    preflight_setup() { :; }
+    report_target_plan() { :; }
+    setup_homebrew() { provisioned=1; }
+    validate_stow_packages() { ((provisioned == 1)); }
+    backup_local_config() { backup_archive=/tmp/dotfiles-test-backup; }
+    setup_stow() { ((provisioned == 1)); }
+    setup_starship() { :; }
+    setup_zsh_aliases() { :; }
+    setup_mise() { :; }
+    verify_installation() { :; }
+    apply_setup
+  ' _ "$REPO_ROOT"
+
+  [ "$status" -eq 0 ]
+}
+
 @test "apply is idempotent" {
   "$REPO_ROOT/setup.sh" --apply >/dev/null
   run "$REPO_ROOT/setup.sh" --apply

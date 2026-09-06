@@ -124,7 +124,9 @@ preflight_setup() {
   local state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/backups"
   local zsh_dir="${ZDOTDIR:-$HOME}"
   local tool_name physical_home physical_zsh_dir package_symlink
-  local -a required_tools=(awk basename brew chmod cmp date find grep mkdir mktemp mv readlink rm rmdir sort stow tar unlink)
+  # Stow is installed from the Brewfile during --apply, so it is not a
+  # bootstrap prerequisite. Commands that use Stow check for it themselves.
+  local -a required_tools=(awk basename brew chmod cmp date find grep mkdir mktemp mv readlink rm rmdir sort tar unlink)
 
   for tool_name in "${required_tools[@]}"; do
     if ! command -v "$tool_name" >/dev/null 2>&1; then
@@ -494,6 +496,11 @@ EOF
 validate_stow_packages() {
   local temporary_home simulation_status=0
 
+  if ! command -v stow >/dev/null 2>&1; then
+    printf '%s\n' 'GNU Stow is required. Run ./setup.sh --apply to install it with Homebrew.' >&2
+    return 1
+  fi
+
   temporary_home=$(mktemp -d "${TMPDIR:-/tmp}/dotfiles-stow-check.XXXXXX")
   stow --dir "$repo_root/stow" --target "$temporary_home" --no-folding \
     --simulate "${stow_packages[@]}" >/dev/null 2>&1 || simulation_status=$?
@@ -745,10 +752,10 @@ check_setup() {
 
 apply_setup() {
   preflight_setup
-  validate_stow_packages
   report_target_plan
-  backup_local_config
   setup_homebrew
+  validate_stow_packages
+  backup_local_config
 
   trap 'rollback_configuration $?' ERR
   trap 'rollback_configuration 130' INT

@@ -65,7 +65,7 @@ mise tasks validate
 
 [tasks."test:shell"]
 description = "Test setup behavior in isolated home directories"
-run = "bats tests/setup.bats"
+run = "bats tests/*.bats"
 
 [tasks."setup:check"]
 description = "Preview setup changes without modifying the machine"
