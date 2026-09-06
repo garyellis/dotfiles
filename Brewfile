@@ -1,6 +1,3 @@
-# Third-party repositories
-tap "plannotator/tap"
-
 # Shell and dotfile foundation
 brew "atuin"
 brew "eza"
@@ -34,6 +31,7 @@ brew "gh"
 brew "git"
 brew "git-delta"
 brew "gitleaks"
+brew "gnupg"
 brew "gopass"
 brew "sops"
 
@@ -63,7 +61,6 @@ brew "youtubedr"
 # AI and agent-assisted development
 brew "herdr"
 brew "hunk"
-brew "plannotator/tap/plannotator-tui"
 brew "tuicr"
 brew "worktrunk"
 cask "claude-code@latest"
